@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Plus, CalendarDays, ListTodo, User, LogOut, Settings, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NavLink, Outlet } from "react-router-dom";
+import UserDropdown from "@/components/modal/UserDropdown";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -27,7 +28,7 @@ export default function Dashboard() {
         {/* Close button for small devices */}
         <div className="md:hidden flex items-center justify-between w-full">
 
-        <div className=" text-xl font-bold px-4 md:hidden"> Dashboard</div>
+          <div className=" text-xl font-bold px-4 md:hidden"> Dashboard</div>
 
           <button
             onClick={() => setSidebarOpen(false)}
@@ -67,34 +68,7 @@ export default function Dashboard() {
           </NavLink>
         </nav>
         {/* User Section */}
-        <div className="p-4 border-t border-gray-800">
-          <Button variant="ghost" className="w-full flex justify-start">
-            <User className="mr-2 h-5 w-5" />
-            <span>John Doe</span>
-          </Button>
-          <NavLink
-            to="/profile"
-            className={({ isActive }) =>
-              `flex items-center px-4 py-2 rounded-lg transition-colors ${isActive ? "bg-gray-700" : "hover:bg-gray-800"}`
-            }
-          >
-            <User className="mr-2 h-5 w-5" /> Profile
-          </NavLink>
-          <NavLink
-            to="/settings"
-            className={({ isActive }) =>
-              `flex items-center px-4 py-2 rounded-lg transition-colors ${isActive ? "bg-gray-700" : "hover:bg-gray-800"}`
-            }
-          >
-            <Settings className="mr-2 h-5 w-5" /> Settings
-          </NavLink>
-          <NavLink
-            to="/logout"
-            className="flex items-center px-4 py-2 rounded-lg transition-colors hover:bg-red-600"
-          >
-            <LogOut className="mr-2 h-5 w-5" /> Log out
-          </NavLink>
-        </div>
+        <UserDropdown></UserDropdown>
       </aside>
       {/* Main Content */}
       <main className="flex-1 p-6 ">
