@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { User, LogIn, LogOut, Settings } from 'lucide-react';
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import useAuth from '@/hooks/useAuth';
 import toast from 'react-hot-toast';
 import Spinner from '@/Spinner/Spinner';
@@ -12,7 +12,8 @@ import Spinner from '@/Spinner/Spinner';
 const UserDropdown = () => {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isRegisterForm, setIsRegisterForm] = useState(false);
-    const { creteUser, loginUser, updateUserProfile, loading } = useAuth()
+    const { user, creteUser, loginUser, updateUserProfile, loading, logOut, setLoading } = useAuth()
+    const navigate = useNavigate()
 
 
 
@@ -29,54 +30,68 @@ const UserDropdown = () => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const formValues = Object.fromEntries(formData.entries());
-        if (isRegisterForm) {
-            await toast.promise(creteUser(formValues.email, formValues.password), {
-                loading: "Creating account...",
-                success: <b>Signed up successfully!</b>,
-                error: <b>Could not signup.</b>,
-            });
-            await updateUserProfile(formValues.name, formValues?.photo);
-            const userInfo = {
-                name: formValues.name,
-                email: formValues.email,
-                createdAt: new Date().toISOString().split('T')[0]
+        try {
+            if (isRegisterForm) {
+                await toast.promise(creteUser(formValues.email, formValues.password), {
+                    loading: "Creating account...",
+                    success: <b>Signed up successfully!</b>,
+                    error: <b>Could not signup.</b>,
+
+                });
+                await updateUserProfile(formValues.name, formValues?.photo);
+                const userInfo = {
+                    name: formValues.name,
+                    email: formValues.email,
+                    createdAt: new Date().toISOString().split('T')[0]
+                }
+                setIsLoginModalOpen(false)
+                console.log(userInfo);
+                // await axiosSecure.post('/users', userInfo)
+                e.target.reset()
+                // setLoading(false)
+                // navigate('/')
+                return
             }
-            console.log(userInfo);
-            // await axiosSecure.post('/users', userInfo)
-            setIsLoginModalOpen(false)
+            await toast.promise(loginUser(formValues.email, formValues.password), {
+                loading: "Signing in account....",
+                success: <b>Signed in Successfully!</b>,
+                error: <b>Could not sign in</b>
+            })
             e.target.reset()
+            setIsLoginModalOpen(false)
             navigate('/')
-            return
+            // console.log(isRegisterForm ? 'Register' : 'Login', 'form submitted');
+        } catch (error) {
+            console.error("Authentication error:", error);
+            toast.error(error.message || "An error occurred");
+        } finally {
+            setLoading(false);
         }
-        await toast.promise(loginUser(formValues.email, formValues.password), {
-            loading: "Signing in account....",
-            success: <b>Signed in Successfully!</b>,
-            error: <b>Could not sign in</b>
+    }
+
+
+    const handleLogout = async () => {
+        await toast.promise(logOut(), {
+            loading: "Signing Out...",
+            success: <b>Logged Out Successfully!</b>,
+            error: <b>Unable to Log Out. Try Again!</b>
         })
-        navigate('/')
-        e.target.reset()
-        setIsLoginModalOpen(false)
-        console.log(isRegisterForm ? 'Register' : 'Login', 'form submitted');
-    };
+    }
 
 
-    // if (loading) {
-    //     return <Spinner></Spinner>
-    // }
+
     return (
         <div className="p-4 border-t border-gray-800">
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="w-full flex justify-start">
                         <User className="mr-2 h-5 w-5" />
-                        <span>John Doe</span>
+                        <span>{user ? user.displayName : "User"}</span>
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
-                    <DropdownMenuItem onClick={handleLoginClick}>
-                        <LogIn className="mr-2 h-4 w-4" />
-                        <span>Login</span>
-                    </DropdownMenuItem>
+
+
                     <DropdownMenuItem>
                         <NavLink
                             to="/profile"
@@ -87,7 +102,7 @@ const UserDropdown = () => {
                             <User className="mr-2 h-4 w-4" /> Profile
                         </NavLink>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    {/* <DropdownMenuItem>
                         <NavLink
                             to="/settings"
                             className={({ isActive }) =>
@@ -96,59 +111,74 @@ const UserDropdown = () => {
                         >
                             <Settings className="mr-2 h-4 w-4" /> Settings
                         </NavLink>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                        <NavLink
-                            to="/logout"
-                            className="flex items-center w-full px-2 py-1 rounded-md hover:bg-red-600"
-                        >
-                            <LogOut className="mr-2 h-4 w-4" /> Log out
-                        </NavLink>
-                    </DropdownMenuItem>
+                    </DropdownMenuItem> */}
+                    {
+                        user && user?.email ?
+                            <DropdownMenuItem>
+                                <NavLink
+                                    onClick={handleLogout}
+                                    className="flex items-center w-full px-2 py-1 rounded-md hover:bg-red-600"
+                                >
+                                    <LogOut className="mr-2 h-4 w-4" /> Log out
+
+                                </NavLink>
+                            </DropdownMenuItem>
+
+                            :
+                            <DropdownMenuItem onClick={handleLoginClick}>
+                                <LogIn className="mr-2 h-4 w-4" />
+                                <span>Login</span>
+                            </DropdownMenuItem>
+                    }
+
                 </DropdownMenuContent>
+
             </DropdownMenu>
 
             <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{isRegisterForm ? 'Register' : 'Login'}</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleFormSubmit} className="space-y-4">
-                        {isRegisterForm && (
-                            <Input
-                                type="text"
-                                name="name"
-                                placeholder="Full Name"
-                                required
-                            />
-                        )}
-                        <Input
-                            type="email"
-                            name="email"
+                {
+                    loading ? <Spinner></Spinner> :
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>{isRegisterForm ? 'Register' : 'Login'}</DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={handleFormSubmit} className="space-y-4">
+                                {isRegisterForm && (
+                                    <Input
+                                        type="text"
+                                        name="name"
+                                        placeholder="Full Name"
+                                        required
+                                    />
+                                )}
+                                <Input
+                                    type="email"
+                                    name="email"
 
-                            placeholder="Email"
-                            required
-                        />
-                        <Input
-                            type="password"
-                            name="password"
-                            placeholder="Password"
-                            required
-                        />
+                                    placeholder="Email"
+                                    required
+                                />
+                                <Input
+                                    type="password"
+                                    name="password"
+                                    placeholder="Password"
+                                    required
+                                />
 
-                        <Button type="submit" className="w-full">
-                            {isRegisterForm ? 'Register' : 'Login'}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="link"
-                            onClick={() => handleRegisterClick(!isRegisterForm)}
-                            className="w-full"
-                        >
-                            {isRegisterForm ? 'Already have an account? Login' : 'Create an account'}
-                        </Button>
-                    </form>
-                </DialogContent>
+                                <Button type="submit" className="w-full">
+                                    {isRegisterForm ? 'Register' : 'Login'}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="link"
+                                    onClick={() => handleRegisterClick(!isRegisterForm)}
+                                    className="w-full"
+                                >
+                                    {isRegisterForm ? 'Already have an account? Login' : 'Create an account'}
+                                </Button>
+                            </form>
+                        </DialogContent>
+                }
             </Dialog>
         </div>
     );
