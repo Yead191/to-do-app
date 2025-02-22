@@ -8,13 +8,28 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import useAuth from '@/hooks/useAuth';
 import toast from 'react-hot-toast';
 import Spinner from '@/Spinner/Spinner';
+import useAxiosPublic from '@/hooks/useAxiosPublic';
+import SocialLogin from '../SocialLogin/SocialLogin';
+import { UploadImage } from '../UploadImage/UploadImage';
+import { useQuery } from 'react-query';
 
 const UserDropdown = () => {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isRegisterForm, setIsRegisterForm] = useState(false);
+    const [isProfileEditOpen, setIsProfileEditOpen] = useState(false);
     const { user, creteUser, loginUser, updateUserProfile, loading, logOut, setLoading } = useAuth()
     const navigate = useNavigate()
+    const axiosPublic = useAxiosPublic()
 
+    const { data: loggedUser, refetch } = useQuery({
+        queryKey: ['loggedUser', user],
+        enabled: !loading,
+        queryFn: async () => {
+            const res = await axiosPublic.get(`/user?email=${user.email}`);
+            return res.data;
+        },
+    });
+    // console.log(loggedUser);
 
 
     const handleLoginClick = () => {
@@ -46,20 +61,18 @@ const UserDropdown = () => {
                 }
                 setIsLoginModalOpen(false)
                 console.log(userInfo);
-                // await axiosSecure.post('/users', userInfo)
+                await axiosPublic.post('/users', userInfo)
                 e.target.reset()
-                // setLoading(false)
-                // navigate('/')
                 return
             }
             await toast.promise(loginUser(formValues.email, formValues.password), {
                 loading: "Signing in account....",
                 success: <b>Signed in Successfully!</b>,
                 error: <b>Could not sign in</b>
-            })
-            e.target.reset()
+            }),
+                e.target.reset()
             setIsLoginModalOpen(false)
-            navigate('/')
+
             // console.log(isRegisterForm ? 'Register' : 'Login', 'form submitted');
         } catch (error) {
             console.error("Authentication error:", error);
@@ -73,10 +86,47 @@ const UserDropdown = () => {
     const handleLogout = async () => {
         await toast.promise(logOut(), {
             loading: "Signing Out...",
-            success: <b>Logged Out Successfully!</b>,
+            success: () => {
+                window.location.reload();
+                return <b>Logged Out Successfully!</b>;
+            },
             error: <b>Unable to Log Out. Try Again!</b>
         })
     }
+    const [image, setImage] = useState(user?.photoUrl);
+    const [imageLoading, setImageLoading] = useState(false)
+
+    const handleUpload = async (e) => {
+        setImageLoading(true)
+        const { url } = await toast.promise(UploadImage(e), {
+            loading: "Image Uploading...",
+            success: <b>Image uploaded Successful!</b>,
+            error: <b>Could not upload.</b>,
+        });
+        setImage(url);
+        setImageLoading(false)
+    }
+    const handleProfileUpdate = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const updatedUser = {
+            name: formData.get("name") || user?.displayName,
+            mobile: formData.get("mobile"),
+            photoURL: image ? image : user.photoURL,
+        };
+        await toast.promise(
+            updateUserProfile(updatedUser.name, image ? image : user.photoURL),
+            {
+                loading: "Updating Profile...",
+                success: <b>Updated Successful!</b>,
+                error: <b>Could not update.</b>,
+            }
+        );
+        await axiosPublic.put(`/users/profile/${loggedUser._id}`, updatedUser)
+        navigate(location.pathname)
+        refetch()
+        setIsProfileEditOpen(false);
+    };
 
 
 
@@ -85,23 +135,26 @@ const UserDropdown = () => {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="w-full flex justify-start">
-                        <User className="mr-2 h-5 w-5" />
+                        {
+                            user?.photoURL ?
+                                <img className="mr-2 h-8 w-8 rounded-full" src={user?.photoURL} alt="" />
+                                :
+
+                                <User className="mr-2 h-5 w-5" />
+                        }
                         <span>{user ? user.displayName : "User"}</span>
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
 
 
-                    <DropdownMenuItem>
-                        <NavLink
-                            to="/profile"
-                            className={({ isActive }) =>
-                                `flex items-center w-full px-2 py-1 rounded-md ${isActive ? "bg-gray-700" : "hover:text-base-100"}`
-                            }
-                        >
-                            <User className="mr-2 h-4 w-4" /> Profile
-                        </NavLink>
-                    </DropdownMenuItem>
+                    {user && user?.email && (
+
+                        <DropdownMenuItem onClick={() => setIsProfileEditOpen(true)}>
+                            <User className="mr-2 h-4 w-4" /> Edit Profile
+                        </DropdownMenuItem>
+
+                    )}
                     {/* <DropdownMenuItem>
                         <NavLink
                             to="/settings"
@@ -117,7 +170,7 @@ const UserDropdown = () => {
                             <DropdownMenuItem>
                                 <NavLink
                                     onClick={handleLogout}
-                                    className="flex items-center w-full px-2 py-1 rounded-md hover:bg-red-600"
+                                    className="flex items-center w-full  py-1 rounded-md "
                                 >
                                     <LogOut className="mr-2 h-4 w-4" /> Log out
 
@@ -141,6 +194,10 @@ const UserDropdown = () => {
                         <DialogContent>
                             <DialogHeader>
                                 <DialogTitle>{isRegisterForm ? 'Register' : 'Login'}</DialogTitle>
+                            </DialogHeader>
+                            <DialogHeader className={'flex items-center justify-center'}>
+
+                                <SocialLogin setIsLoginModalOpen={setIsLoginModalOpen}></SocialLogin>
                             </DialogHeader>
                             <form onSubmit={handleFormSubmit} className="space-y-4">
                                 {isRegisterForm && (
@@ -179,6 +236,43 @@ const UserDropdown = () => {
                             </form>
                         </DialogContent>
                 }
+            </Dialog>
+            {/* Edit Profile Modal */}
+            <Dialog open={isProfileEditOpen} onOpenChange={setIsProfileEditOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Edit Profile</DialogTitle>
+                    </DialogHeader>
+                    {loggedUser?.photoURL && (
+                        <div className="flex justify-center">
+                            <img src={loggedUser.photoURL} alt="Current Profile" className="w-24 h-24 rounded-lg object-cover border-2 border-gray-300" />
+                        </div>
+                    )}
+                    <form onSubmit={handleProfileUpdate} className="space-y-4">
+                        <Input
+                            type="text"
+                            name="name"
+                            defaultValue={user?.displayName || ""}
+                            placeholder="Full Name"
+                            required
+                        />
+                        <Input
+                            type="tel"
+                            name="mobile"
+                            defaultValue={loggedUser?.mobile || ""}
+                            placeholder="Mobile Number"
+                            required
+                        />
+                        <Input type="file" name="photo" accept="image/*"
+                            onChange={handleUpload} />
+                        {
+                            imageLoading ?
+                                <Button disabled={imageLoading} type="submit" className="w-full">Please Wait...</Button>
+                                :
+                                <Button type="submit" className="w-full">Update</Button>
+                        }
+                    </form>
+                </DialogContent>
             </Dialog>
         </div>
     );

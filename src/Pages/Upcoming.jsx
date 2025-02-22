@@ -16,14 +16,14 @@ import useAuth from '@/hooks/useAuth';
 
 const categories = ['To-Do', 'In Progress', 'Done'];
 
-const AllTask = () => {
+const Upcoming = () => {
     const { user, loading } = useAuth()
     const axiosPublic = useAxiosPublic();
     const { data: tasks = [], refetch } = useQuery({
         queryKey: ['tasks'],
         enabled: !loading,
         queryFn: async () => {
-            const res = await axiosPublic.get(`/tasks?email=${user?.email}`);
+            const res = await axiosPublic.get(`/my-tasks/upcoming/${user.email}`);
             return res.data;
         }
     });
@@ -106,7 +106,7 @@ const AllTask = () => {
     return (
         <main className="overflow-y-auto p-4 container mx-auto">
             <div className="mb-4 flex justify-between items-center">
-                <h1 className="text-2xl font-bold">Tasks</h1>
+                <h1 className="text-2xl font-bold">Upcoming Tasks</h1>
                 {/* Add New Task Dialog */}
                 <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                     <DialogTrigger asChild>
@@ -186,4 +186,4 @@ const AllTask = () => {
     );
 };
 
-export default AllTask;
+export default Upcoming;
