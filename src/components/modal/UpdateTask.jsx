@@ -27,7 +27,7 @@ const UpdateTask = ({ isModalOpen, setIsModalOpen, task, refetch }) => {
         const updatedTask = {
             title: formData.get('title'),
             description: formData.get('description'),
-            date: selectedDate,
+            date: selectedDate || task.date,
             category: formData.get('category'),
         };
 
