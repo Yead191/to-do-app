@@ -25,7 +25,7 @@ export default function Dashboard() {
       <aside
         className={`fixed md:relative top-0 left-0 w-64 bg-gray-900 text-white flex flex-col h-full transition-transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 md:w-64 z-50  pt-6 md:mt-0 md:pt-0`}
       >
-        {/* Close button for small devices */}
+        {/* Close button  */}
         <div className="md:hidden flex items-center justify-between w-full">
 
           <div className=" text-xl font-bold px-4 md:hidden"> Dashboard</div>

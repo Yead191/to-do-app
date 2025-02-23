@@ -2,8 +2,9 @@ import { useDraggable } from "@dnd-kit/core";
 import { useState, useRef } from "react";
 import { toast } from "react-hot-toast";
 import useAxiosPublic from "@/hooks/useAxiosPublic";
-import { Grip, Trash, Edit } from "lucide-react";
+import { Grip, Trash, Edit, Calendar } from "lucide-react";
 import UpdateTask from "../modal/UpdateTask";
+import { Badge } from "../ui/badge";
 
 const TaskCard = ({ task, refetch }) => {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -100,17 +101,24 @@ const TaskCard = ({ task, refetch }) => {
                     </button>
 
 
+                    {/* <div className="flex items-center gap-4"> */}
+
                     <div>
+
                         <h3 className="text-lg font-medium">{task.title}</h3>
                         <p className="text-slate-600 text-sm">{task.description}</p>
+                        <p className="text-xs mt-1">Created: {new Date(task.timestamp).toLocaleDateString()} </p>
                     </div>
+                    {/* </div> */}
                 </div>
 
                 <div className="flex items-center gap-2">
 
-                    <p className="text-slate-600 text-sm">
-                        {new Date(task.date).toLocaleDateString()}
-                    </p>
+                    <Badge className={'flex gap-1 items-center'}>
+
+                      <Calendar size={14}  />  {new Date(task.date).toLocaleDateString()}
+                    </Badge>
+
 
                     <input
                         type="checkbox"
@@ -149,7 +157,8 @@ const TaskCard = ({ task, refetch }) => {
             <UpdateTask
                 isModalOpen={isModalOpen}
                 setIsModalOpen={setIsModalOpen}
-                task={selectedTask} // Pass the selected task
+                task={selectedTask}
+                refetch={refetch}
             />
         </div>
     );

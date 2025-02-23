@@ -87,7 +87,7 @@ const UserDropdown = () => {
         await toast.promise(logOut(), {
             loading: "Signing Out...",
             success: () => {
-                window.location.reload();
+                // window.location.reload();
                 return <b>Logged Out Successfully!</b>;
             },
             error: <b>Unable to Log Out. Try Again!</b>

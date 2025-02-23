@@ -1,85 +1,92 @@
 import useAuth from '@/hooks/useAuth';
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import useAxiosPublic from '@/hooks/useAxiosPublic';
+import toast from 'react-hot-toast';
 
 const categories = ['To-Do', 'In Progress', 'Done'];
 
-const UpdateTask = ({ isModalOpen, setIsModalOpen, task }) => {
-    // console.log(task);
+const UpdateTask = ({ isModalOpen, setIsModalOpen, task, refetch }) => {
+    const axiosPublic = useAxiosPublic();
     const { user } = useAuth();
-    const [newTask, setNewTask] = useState({
-        title: task.title ,
-        description: task.description ,
-        date: task.date ,
-        category: task.category,
-    });
+    const [selectedDate, setSelectedDate] = useState(task.date);
 
-    const addTask = async () => {
-        // Add task logic here
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (selectedDate && new Date(selectedDate) < new Date().setHours(0, 0, 0, 0)) {
+            toast.error('You cannot select past date.');
+            return;
+        }
+        const formData = new FormData(e.target);
+        const updatedTask = {
+            title: formData.get('title'),
+            description: formData.get('description'),
+            date: selectedDate,
+            category: formData.get('category'),
+        };
+
+        try {
+            await toast.promise(axiosPublic.patch(`/my-task/update/${task._id}`, updatedTask), {
+                loading: 'Updating Task...',
+                success: <b>Task Updated Successfully!</b>,
+                error: <b>Unable to Update. Try again!</b>
+            });
+            refetch();
+            setIsModalOpen(false);
+        } catch (error) {
+            toast.error(error);
+        }
     };
 
     return (
-        <div>
-            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Update Task</DialogTitle>
-                    </DialogHeader>
-                    {user ? (
-                        <div className="space-y-4">
-                            {/* Task Title */}
-                            <Input
-                                placeholder="Title (required, max 50 characters)"
-                                value={newTask.title}
-                                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                                maxLength={50}
-                            />
-                            {/* Task Description */}
-                            <Textarea
-                                placeholder="Description (optional, max 200 characters)"
-                                value={newTask.description}
-                                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                                maxLength={200}
-                            />
-                            {/* Task Date */}
-                            <Calendar
-                                mode="single"
-                                selected={newTask.date}
-                                onSelect={(date) => {
-                                    if (date) {
-                                        setNewTask({ ...newTask, date });
-                                    }
-                                }}
-                            />
-                            {/* Task Category */}
-                            <Select
-                                value={newTask.category}
-                                onValueChange={(value) => setNewTask({ ...newTask, category: value })}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Category" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {categories.map(cat => (
-                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {/* Add Task Button */}
-                            <Button onClick={addTask}>Add Task</Button>
-                        </div>
-                    ) : (
-                        <p className='text-red-400'>Please Login to Add New Task</p>
-                    )}
-                </DialogContent>
-            </Dialog>
-        </div>
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Update Task</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {/*  Title */}
+                    <Input
+                        name="title"
+                        placeholder="Title (required, max 50 characters)"
+                        defaultValue={task.title}
+                        maxLength={50}
+                        required
+                    />
+                    {/*  Description */}
+                    <Textarea
+                        name="description"
+                        placeholder="Description (optional, max 200 characters)"
+                        defaultValue={task.description}
+                        maxLength={200}
+                    />
+                    {/*  Date */}
+                    <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={(date) => date && setSelectedDate(date)}
+                    />
+                    {/*  Category */}
+                    <Select name="category" defaultValue={task.category}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {categories.map(cat => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Button type="submit">Update Task</Button>
+                </form>
+            </DialogContent>
+        </Dialog>
     );
 };
 

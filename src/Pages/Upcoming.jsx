@@ -20,7 +20,7 @@ const Upcoming = () => {
     const { user, loading } = useAuth()
     const axiosPublic = useAxiosPublic();
     const { data: tasks = [], refetch } = useQuery({
-        queryKey: ['tasks'],
+        queryKey: ['tasks', user],
         enabled: !loading,
         queryFn: async () => {
             const res = await axiosPublic.get(`/my-tasks/upcoming/${user.email}`);
@@ -59,13 +59,13 @@ const Upcoming = () => {
 
     const addTask = async () => {
 
-        // Validate the task title
+
         if (!newTask.title.trim()) {
             toast.error('Title is required.');
             return;
         }
 
-        // Validate the task date
+
         const today = new Date().setHours(0, 0, 0, 0);
         const selectedDate = newTask.date.setHours(0, 0, 0, 0);
 
@@ -74,7 +74,7 @@ const Upcoming = () => {
             return;
         }
 
-        // Format the date for the backend (e.g., ISO string)
+
         const formattedTask = {
             ...newTask,
             date: newTask.date.toISOString(),
@@ -90,8 +90,6 @@ const Upcoming = () => {
                 error: <b>Failed to add task.</b>,
             }
         );
-
-        // Refetch tasks and reset the form
         refetch();
         setIsModalOpen(false);
         setNewTask({

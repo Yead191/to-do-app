@@ -20,7 +20,7 @@ const AllTask = () => {
     const { user, loading } = useAuth()
     const axiosPublic = useAxiosPublic();
     const { data: tasks = [], refetch } = useQuery({
-        queryKey: ['tasks'],
+        queryKey: ['tasks', user],
         enabled: !loading,
         queryFn: async () => {
             const res = await axiosPublic.get(`/tasks?email=${user?.email}`);
@@ -59,13 +59,12 @@ const AllTask = () => {
 
     const addTask = async () => {
 
-        // Validate the task title
         if (!newTask.title.trim()) {
             toast.error('Title is required.');
             return;
         }
 
-        // Validate the task date
+
         const today = new Date().setHours(0, 0, 0, 0);
         const selectedDate = newTask.date.setHours(0, 0, 0, 0);
 
@@ -73,8 +72,6 @@ const AllTask = () => {
             toast.error('Cannot select a past date.');
             return;
         }
-
-        // Format the date for the backend (e.g., ISO string)
         const formattedTask = {
             ...newTask,
             date: newTask.date.toISOString(),
@@ -91,7 +88,6 @@ const AllTask = () => {
             }
         );
 
-        // Refetch tasks and reset the form
         refetch();
         setIsModalOpen(false);
         setNewTask({
