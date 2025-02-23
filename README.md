@@ -29,7 +29,7 @@ This is the frontend repository for the **Daily To-Do** application. It provides
 ### Additional Features
 - **Animations**: Smooth animations and transitions for a polished user experience.
 - **Accessibility**: Built with accessibility in mind, ensuring the app is usable by everyone.
-- **Dark Mode Support**: Optional dark mode for comfortable usage in low-light environments.
+
 
 ---
 
@@ -44,7 +44,7 @@ This is the frontend repository for the **Daily To-Do** application. It provides
 - **Notifications**: React Hot Toast
 - **Routing**: React Router
 - **Icons**: Lucide Icons
-- **Local Storage**: zustand or redux-persist
+
 
 ---
 
