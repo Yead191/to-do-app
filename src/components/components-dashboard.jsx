@@ -26,13 +26,13 @@ export function DashboardJsx() {
 
   const addTask = () => {
     // Implement add task functionality
-    console.log("Add new task")
+    // console.log("Add new task")
   }
 
   const filterTasks = (view) => {
     setActiveView(view)
     // Implement task filtering based on the view
-    console.log(`Filter tasks: ${view}`)
+    // console.log(`Filter tasks: ${view}`)
   }
 
   return (

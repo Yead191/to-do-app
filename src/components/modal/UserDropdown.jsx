@@ -60,7 +60,7 @@ const UserDropdown = () => {
                     createdAt: new Date().toISOString().split('T')[0]
                 }
                 setIsLoginModalOpen(false)
-                console.log(userInfo);
+                // console.log(userInfo);
                 await axiosPublic.post('/users', userInfo)
                 e.target.reset()
                 return

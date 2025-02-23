@@ -13,15 +13,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import useAuth from '@/hooks/useAuth';
+import Spinner from '@/Spinner/Spinner';
 
 const categories = ['To-Do', 'In Progress', 'Done'];
 
 const AllTask = () => {
     const { user, loading } = useAuth()
     const axiosPublic = useAxiosPublic();
-    const { data: tasks = [], refetch } = useQuery({
+    const { data: tasks = [], isLoading, refetch } = useQuery({
         queryKey: ['tasks', user],
-        enabled: !loading,
+        enabled: !loading || user,
         queryFn: async () => {
             const res = await axiosPublic.get(`/tasks?email=${user?.email}`);
             return res.data;
@@ -97,6 +98,9 @@ const AllTask = () => {
             category: 'To-Do',
         });
     };
+    if (loading || isLoading) {
+        return <Spinner></Spinner>
+      }
 
 
     return (

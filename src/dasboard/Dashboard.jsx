@@ -3,9 +3,15 @@ import { Plus, CalendarDays, ListTodo, User, LogOut, Settings, Menu, X } from "l
 import { Button } from "@/components/ui/button";
 import { NavLink, Outlet } from "react-router-dom";
 import UserDropdown from "@/components/modal/UserDropdown";
+import useAuth from "@/hooks/useAuth";
+import Spinner from "@/Spinner/Spinner";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const {loading} = useAuth()
+  if (loading) {
+    return <Spinner></Spinner>
+  }
 
   return (
     <div className="flex h-screen flex-col md:flex-row ">

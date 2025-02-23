@@ -13,13 +13,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import useAuth from '@/hooks/useAuth';
+import Spinner from '@/Spinner/Spinner';
 
 const categories = ['To-Do', 'In Progress', 'Done'];
 
 const Upcoming = () => {
     const { user, loading } = useAuth()
     const axiosPublic = useAxiosPublic();
-    const { data: tasks = [], refetch } = useQuery({
+    const { data: tasks = [], isLoading, refetch } = useQuery({
         queryKey: ['tasks', user],
         enabled: !loading,
         queryFn: async () => {
@@ -100,6 +101,13 @@ const Upcoming = () => {
         });
     };
 
+    if (loading) {
+        return <Spinner></Spinner>
+    }
+
+    if (user && isLoading) {
+        return <Spinner></Spinner>
+    }
 
     return (
         <main className="overflow-y-auto p-4 container mx-auto">

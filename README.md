@@ -56,7 +56,7 @@ This is the frontend repository for the **Daily To-Do** application. It provides
 ---
 
 ## Live Link
-
+https://daily-to-do-by-yead.netlify.app/
 
 ## Setup Instructions
 
