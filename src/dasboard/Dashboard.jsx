@@ -40,6 +40,7 @@ export default function Dashboard() {
         </div>
 
         <div className="p-4 text-xl lg:text-2xl font-bold hidden md:block"> Daily ToDo</div>
+        <p className="pl-4 -mt-3 text-xs font-mono">Developed By Yead</p>
         {/* <div className="p-4 text-xl font-bold  md:block">Todo Dashboard</div> */}
         <nav className="flex-1 px-2 space-y-2 pt-12">
           <NavLink
