@@ -103,11 +103,12 @@ const TaskCard = ({ task, refetch }) => {
 
                     {/* <div className="flex items-center gap-4"> */}
 
-                    <div>
+                    <div className="flex flex-col ">
 
                         <h3 className="text-lg font-medium">{task.title}</h3>
                         <p className="text-slate-600 text-sm">{task.description}</p>
-                        <p className="text-xs mt-1">Created: {new Date(task.timestamp).toLocaleDateString()} </p>
+                        <p className="text-xs mt-1 mb-1">Created: {new Date(task.timestamp).toLocaleDateString()} </p>
+                        <Badge  variant={'outline'}> {task.email} </Badge>
                     </div>
                     {/* </div> */}
                 </div>
@@ -116,7 +117,7 @@ const TaskCard = ({ task, refetch }) => {
 
                     <Badge className={'flex gap-1 items-center'}>
 
-                      <Calendar size={14}  />  {new Date(task.date).toLocaleDateString()}
+                      <Calendar size={14}  /> Due   {new Date(task.date).toLocaleDateString()}
                     </Badge>
 
 
