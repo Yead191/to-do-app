@@ -15,7 +15,45 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import useAuth from '@/hooks/useAuth';
 import Spinner from '@/Spinner/Spinner';
 
-const categories = ['To-Do', 'In Progress', 'Done'];
+import {
+    PlusIcon,
+    CheckCircleIcon,
+    ClockIcon,
+    ListBulletIcon,
+    ArrowPathIcon,
+    ExclamationCircleIcon,
+    ChartBarIcon,
+    CalendarIcon,
+    BellAlertIcon,
+    FireIcon
+} from '@heroicons/react/24/outline';
+import Stats from '@/components/stats/Stats';
+
+const categories = [{
+
+    title: 'To-Do',
+    icon: ListBulletIcon,
+    color: 'bg-purple-50',
+    borderColor: 'border-purple-200',
+    textColor: 'text-purple-700',
+    iconBg: 'bg-purple-100'
+},
+{
+    title: 'In Progress',
+    icon: ClockIcon,
+    color: 'bg-blue-50',
+    borderColor: 'border-blue-200',
+    textColor: 'text-blue-700',
+    iconBg: 'bg-blue-100'
+},
+{
+    title: 'Done',
+    icon: CheckCircleIcon,
+    color: 'bg-green-50',
+    borderColor: 'border-green-200',
+    textColor: 'text-green-700',
+    iconBg: 'bg-green-100'
+}]
 
 const Upcoming = () => {
     const { user, loading } = useAuth()
@@ -110,7 +148,7 @@ const Upcoming = () => {
     }
 
     return (
-        <main className="overflow-y-auto p-4 container mx-auto">
+        <main className="overflow-y-auto p-4 lg:container mx-auto">
             <div className="mb-4 flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Upcoming Tasks</h1>
                 {/* Add New Task Dialog */}
@@ -153,7 +191,7 @@ const Upcoming = () => {
                                     />
                                     {/* Task Category */}
                                     <Select
-                                        value={newTask.category}
+                                        value={newTask.category.title}
                                         onValueChange={(value) => setNewTask({ ...newTask, category: value })}
                                     >
                                         <SelectTrigger>
@@ -161,7 +199,7 @@ const Upcoming = () => {
                                         </SelectTrigger>
                                         <SelectContent>
                                             {categories.map(cat => (
-                                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                                <SelectItem key={cat.title} value={cat.title}>{cat.title}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -174,15 +212,17 @@ const Upcoming = () => {
                     </DialogContent>
                 </Dialog>
             </div>
+            <Stats tasks={tasks}></Stats>
+
             {/* Task Columns */}
             <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 w-full">
                     {categories?.map(category => (
                         <TaskColumn
-                            key={category}
+                            key={category.title}
                             category={category}
                             refetch={refetch}
-                            tasks={tasks?.filter(task => task.category === category)}
+                            tasks={tasks?.filter(task => task.category === category.title)}
                             onDrop={handleDragEnd}
                         />
                     ))}
